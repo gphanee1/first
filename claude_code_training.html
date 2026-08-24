@@ -1,0 +1,3065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — Engineer's Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#191714;
+  --paper:#fbfaf7;
+  --warm:#f4efe6;
+  --warm2:#ebe4d8;
+  --line:#ded6c8;
+  --muted:#766f64;
+  --muted2:#9a9184;
+  --clay:#b65f34;
+  --blue:#245c8c;
+  --green:#26724c;
+  --plum:#6a3f83;
+  --gold:#a77a25;
+  --red:#9e3830;
+  --dark:#15120f;
+  --code:#f0ebe2;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"DM Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;font-weight:300;line-height:1.72;overflow-x:hidden}
+a{color:inherit}
+code,kbd{font-family:var(--mono);font-size:.88em;background:var(--warm2);border:1px solid var(--line);border-radius:5px;padding:.08rem .32rem}
+blockquote{margin:16px 0;padding:14px 18px;border-left:4px solid var(--blue);background:rgba(36,92,140,.08);font-style:italic;color:#5a5550;line-height:1.82}
+blockquote p{margin:0}
+blockquote strong{color:var(--ink);font-style:normal}
+pre{margin:0;white-space:pre;overflow-x:auto}
+
+/* ── HERO ── */
+.hero{min-height:92vh;position:relative;overflow:hidden;display:grid;grid-template-rows:1fr auto;color:#fbf5eb;background:radial-gradient(ellipse 64% 58% at 14% 48%,rgba(36,92,140,.32),transparent 62%),radial-gradient(ellipse 52% 68% at 83% 22%,rgba(106,63,131,.28),transparent 60%),linear-gradient(135deg,#0c0f18 0%,#10100f 52%,#14100c 100%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 85% 75% at 50% 45%,black 35%,transparent 100%)}
+
+/* hero right-side terminal animation */
+.hero-terminal{position:absolute;inset:auto 5vw 7vh auto;width:min(460px,40vw);min-width:290px;opacity:.86}
+.term-window{border:1px solid rgba(251,245,235,.14);background:rgba(14,16,20,.82);backdrop-filter:blur(10px);border-radius:10px;overflow:hidden;box-shadow:0 28px 72px rgba(0,0,0,.38)}
+.term-bar{background:rgba(255,255,255,.06);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-dot.r{background:#ff5f57}
+.term-dot.y{background:#ffbd2e}
+.term-dot.g{background:#28c840}
+.term-title{font-family:var(--mono);font-size:11px;color:rgba(251,245,235,.38);margin-left:6px;letter-spacing:.06em}
+.term-body{padding:16px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.7;color:rgba(251,245,235,.72)}
+.term-line{margin:0;padding:0}
+.t-prompt{color:#7ec8f5}
+.t-cmd{color:#fbf5eb}
+.t-ok{color:#82d9a8}
+.t-dim{color:rgba(251,245,235,.34)}
+.t-plum{color:#c4a4f0}
+.t-gold{color:#f0c46d}
+.t-err{color:#f08080}
+.cursor{display:inline-block;width:7px;height:1em;background:#f0c46d;vertical-align:text-bottom;animation:blink 1s step-end infinite;margin-left:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.term-line{animation:fadeUp .4s ease forwards;opacity:0}
+.term-line:nth-child(1){animation-delay:.1s}
+.term-line:nth-child(2){animation-delay:.55s}
+.term-line:nth-child(3){animation-delay:1s}
+.term-line:nth-child(4){animation-delay:1.45s}
+.term-line:nth-child(5){animation-delay:1.9s}
+.term-line:nth-child(6){animation-delay:2.35s}
+.term-line:nth-child(7){animation-delay:2.8s}
+.term-line:nth-child(8){animation-delay:3.2s}
+.term-line:nth-child(9){animation-delay:3.6s}
+
+.hero-inner{position:relative;z-index:2;width:min(1160px,100%);margin:0 auto;padding:92px 44px 48px;display:grid;align-content:center}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#f0c46d;margin-bottom:18px}
+h1,h2,h3{font-family:var(--serif);font-weight:300;line-height:1.06;letter-spacing:0;margin:0}
+h1{max-width:780px;font-size:clamp(44px,8vw,96px)}
+h1 em{color:#f0c46d;font-style:italic}
+.hero-sub{max-width:640px;margin-top:24px;color:rgba(251,245,235,.66);font-size:clamp(16px,2vw,20px);line-height:1.62}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border:1px solid rgba(251,245,235,.22);border-radius:8px;color:#fbf5eb;background:rgba(251,245,235,.07);text-decoration:none;font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.btn.primary{background:#f0c46d;color:#17130f;border-color:#f0c46d}
+.scroll-hint{position:relative;z-index:2;padding:0 44px 34px;text-align:center;color:rgba(251,245,235,.34);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+
+/* ── NAV ── */
+.topnav{position:sticky;top:0;z-index:20;display:flex;gap:0;overflow-x:auto;background:rgba(251,250,247,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{flex:0 0 auto;padding:15px 18px;text-decoration:none;color:var(--muted);border-bottom:2px solid transparent;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.topnav a:hover,.topnav a.active{color:var(--blue);border-color:var(--blue)}
+
+/* ── SECTION COLLAPSE ── */
+.section{border-bottom:1px solid var(--line)}
+.section.collapsed .container>:not(.section-head){display:none}
+.section-head{cursor:pointer;position:relative;padding-right:54px;display:grid;grid-template-columns:84px 1fr;gap:28px;padding-bottom:36px;border-bottom:1px solid var(--line)}
+.section-head:focus-within{outline:2px solid rgba(36,92,140,.55);outline-offset:6px}
+.section-head:hover .section-title{color:var(--blue)}
+.section-toggle{cursor:pointer;padding:0;position:absolute;right:0;top:8px;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--muted);background:var(--paper);font-family:var(--mono);font-size:18px;transition:background .2s,color .2s,transform .2s,border-color .2s}
+.section:not(.collapsed) .section-toggle{transform:rotate(45deg);background:var(--dark);color:var(--paper);border-color:var(--dark)}
+.section.collapsed .section-head{padding-bottom:0;border-bottom:0}
+.section.collapsed .container{padding-top:34px;padding-bottom:34px}
+.section-status{margin-top:12px;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── LAYOUT ── */
+.container{width:min(1120px,100%);margin:0 auto;padding:72px 44px}
+.section-no{color:var(--blue);opacity:.16;font-family:var(--serif);font-size:78px;line-height:1}
+.section-label{color:var(--blue);font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin:8px 0}
+.section-title{font-size:clamp(34px,4.4vw,56px);max-width:880px}
+.lead{max-width:760px;color:#4c453d;font-size:18px;margin:18px 0 0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:34px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+.stacked{display:grid;grid-template-columns:1fr;gap:18px;margin-top:30px}
+
+/* ── PANELS ── */
+.panel{border:1px solid var(--line);background:var(--warm);border-radius:8px;padding:22px}
+.panel.white{background:#fffdfa}
+.panel.dark{background:#1b1713;color:#fbf5eb;border-color:#302720}
+.panel.blue{background:#eaf0f7;border-color:rgba(36,92,140,.2)}
+.panel h3{font-size:27px;margin-bottom:10px}
+.panel p{margin:0;color:#50483f}
+.panel.dark p{color:rgba(251,245,235,.66)}
+.panel.blue p{color:#1e3a52}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;margin-bottom:12px;color:var(--blue);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.tag.green{color:var(--green)}
+.tag.clay{color:var(--clay)}
+.tag.plum{color:var(--plum)}
+.tag.red{color:var(--red)}
+.tag.gold{color:var(--gold)}
+
+/* ── CALLOUTS ── */
+.callout{margin-top:26px;border-left:3px solid var(--green);background:#edf4ee;padding:16px 18px;border-radius:8px;color:#253d2d;line-height:1.7}
+.warn{border-left-color:var(--red);background:#f7ece9;color:#4a2b28}
+.info{border-left-color:var(--blue);background:#eaf0f7;color:#1e3a52}
+.gold-callout{border-left-color:var(--gold);background:#faf5e8;color:#3d2e08}
+
+/* ── CODEBLOCK ── */
+pre.codeblock,div.codeblock{margin:0;border:0;border-radius:0;padding:18px 22px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.72;color:#2a2520;background:var(--code);white-space:pre;word-break:normal;overflow-wrap:normal}
+.codeblock .dim{color:#918779}
+.codeblock .key{color:#8f3d16;font-weight:400}
+.codeblock .ok{color:#1f7045}
+.codeblock .blue{color:#1f5d8d}
+.codeblock .accent{color:#a07020}
+.codeblock .red{color:#9e3830}
+.codeblock .str{color:#2d6b2d}
+.codeblock .cmt{color:#9a9184;font-style:italic}
+.codeblock .plum{color:#6a3f83}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin-top:28px}
+table{width:100%;border-collapse:collapse;min-width:600px;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:14px 12px;text-align:left;vertical-align:top}
+th{color:var(--blue);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:400}
+td{color:#423c35}
+
+/* ── FRAMEWORK CARDS ── */
+.framework-cards{display:grid;gap:18px;margin-top:28px}
+.framework-card{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fffdfa}
+.fc-head{padding:18px 20px;background:var(--warm);border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.fc-title{font-family:var(--serif);font-size:24px;line-height:1.1}
+.fc-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);padding:4px 10px;border-radius:12px;border:1px solid rgba(36,92,140,.4);background:#eaf0f7;white-space:nowrap}
+.fc-label.green{color:var(--green);border-color:rgba(38,114,76,.4);background:#edf4ee}
+.fc-label.red{color:var(--red);border-color:rgba(158,56,48,.4);background:#f7ece9}
+.fc-label.gold{color:var(--gold);border-color:rgba(167,122,37,.4);background:#faf5e8}
+.fc-label.plum{color:var(--plum);border-color:rgba(106,63,131,.4);background:#f6f2f9}
+.fc-body{padding:18px 20px;display:grid;gap:14px}
+.fc-body h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin:0 0 6px}
+.fc-body p{font-size:13.5px;color:#433d36;line-height:1.65;margin:0}
+
+/* ── SCENE ── */
+.scene{margin-top:0;border-left:3px solid var(--blue);padding:18px 22px;background:linear-gradient(to right,#eaf0f7,#fffdfa);border-radius:0 8px 8px 0;font-size:16px;color:#3a3028;line-height:1.8}
+.scene+.scene{margin-top:14px}
+.scene-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+
+/* ── PRINCIPLE LIST ── */
+.principle-list{margin-top:28px;display:grid;gap:16px}
+.principle{border:1px solid var(--line);border-radius:8px;padding:20px;background:#fffdfa}
+.principle h4{font-family:var(--serif);font-size:22px;margin:0 0 8px;color:var(--ink)}
+.principle p{margin:0;color:#514a42;font-size:14px;line-height:1.7}
+
+/* ── WORKFLOW STEPS ── */
+.workflow{margin-top:32px;display:grid;gap:14px}
+.step{display:grid;grid-template-columns:54px 1fr;gap:18px;border:1px solid var(--line);border-radius:8px;background:#fffdfa;padding:18px}
+.step-no{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--dark);color:var(--paper);font-family:var(--serif);font-size:24px;flex-shrink:0}
+.step h3{font-size:22px;margin-bottom:6px}
+.step p{margin:0;color:#514a42;font-size:14px;line-height:1.65}
+
+/* ── COMPARE ROW ── */
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:24px}
+.compare-cell{background:var(--paper);padding:20px 22px;font-size:14px;color:#3a3028;line-height:1.65}
+.compare-cell.head{background:var(--warm);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);padding:13px 22px}
+.compare-cell.head.red{color:var(--red)}
+
+/* ── TRACE ── */
+.trace{margin-top:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.trace-head{padding:14px 18px;background:var(--dark);color:#fbf5eb;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;display:flex;gap:10px;align-items:center}
+.trace-dot{width:8px;height:8px;border-radius:50%;background:#7ec8f5;flex-shrink:0}
+.trace-dot.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.trace-row{display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--line)}
+.trace-row:last-child{border-bottom:0}
+.trace-who{padding:14px 16px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-right:1px solid var(--line);display:flex;align-items:flex-start;padding-top:16px;flex-shrink:0}
+.trace-who.user{color:var(--blue);background:#f2f6fb}
+.trace-who.claude{color:var(--clay);background:#fff8f2}
+.trace-who.tool{color:var(--green);background:#f0f7f2}
+.trace-who.out{color:var(--plum);background:#f6f2f9}
+.trace-who.warn{color:var(--red);background:#fdf1ef}
+.trace-what{padding:14px 18px;font-size:14px;color:#3a3028;line-height:1.65;background:#fffdfa}
+.trace-what code{font-size:.83em}
+.trace-what .outcome{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:10px}
+.outcome.pass{background:#edf4ee;color:var(--green);border:1px solid rgba(38,114,76,.3)}
+.outcome.active{background:#eaf0f7;color:var(--blue);border:1px solid rgba(36,92,140,.3)}
+.outcome.blocked{background:#fdf1ef;color:var(--red);border:1px solid rgba(158,56,48,.3)}
+
+/* ── CHAPTER BRIDGE ── */
+.chapter-bridge{margin:40px 0 0;padding:22px 24px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(135deg,#f9f5ef,#f0f6ff);font-size:16px;color:#3a3028;line-height:1.82}
+.chapter-bridge strong{color:var(--blue)}
+.chapter-num{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+
+/* ── DISCLAIMER / FOOTER ── */
+.disclaimer{background:#f7ece9;border-top:1px solid var(--line);padding:28px 44px}
+.disclaimer-inner{width:min(1120px,100%);margin:0 auto;font-size:14px;color:#4a2b28;line-height:1.7}
+.disclaimer-inner h3{font-family:var(--serif);margin:0 0 14px;font-size:22px;font-weight:400}
+.disclaimer-inner p{margin:0 0 12px}
+.disclaimer-inner p:last-child{margin-bottom:0}
+.footer{padding:28px 44px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+
+@media(max-width:880px){
+  .hero-terminal{position:relative;inset:auto;width:auto;margin:0 24px 34px}
+  .hero-inner{padding:76px 28px 28px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .trace-row{grid-template-columns:1fr}
+  .trace-who{border-right:0;border-bottom:1px solid var(--line);padding-top:12px}
+  .compare-row{grid-template-columns:1fr}
+  .fc-head{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  body{font-size:16px}
+  .container{padding:54px 24px}
+  .section-head{grid-template-columns:1fr;gap:8px}
+  .section-no{font-size:58px}
+  .topnav a{padding:13px 14px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Engineer Training — May 2026</div>
+    <h1>Claude Code is not a chatbot.<br><em>It is a collaborator.</em></h1>
+    <p class="hero-sub">Every junior engineer on your team has access to something that didn't exist three years ago: a system that reads your entire codebase, reasons about it, executes changes, runs tests, and iterates — all without context switching. This guide covers what it actually is, how it works, and where it breaks. Read it before you ship anything important with it.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#what">What Claude Code is</a>
+      <a class="btn" href="#architecture">Architecture</a>
+      <a class="btn" href="#capabilities">Capabilities</a>
+      <a class="btn" href="#economics">Economics</a>
+      <a class="btn" href="#security">Security</a>
+      <a class="btn" href="#java">Java walkthrough</a>
+      <a class="btn" href="#limits">Limitations</a>
+    </div>
+  </div>
+  <div class="hero-terminal" aria-hidden="true">
+    <div class="term-window">
+      <div class="term-bar">
+        <div class="term-dot r"></div>
+        <div class="term-dot y"></div>
+        <div class="term-dot g"></div>
+        <span class="term-title">claude — payment-service</span>
+      </div>
+      <div class="term-body">
+        <p class="term-line"><span class="t-prompt">›</span> <span class="t-cmd">our payment processor times out under load. what's wrong?</span></p>
+        <p class="term-line"><span class="t-dim">  Reading PaymentService.java, OrderRepository.java…</span></p>
+        <p class="term-line"><span class="t-plum">  Found: processOrder() calls validateCredit() + reserveInventory()</span></p>
+        <p class="term-line"><span class="t-plum">  sequentially. Both hit the database. p99 = 840ms under 200 rps.</span></p>
+        <p class="term-line"><span class="t-gold">  Recommendation: parallelize with CompletableFuture.allOf().</span></p>
+        <p class="term-line"><span class="t-gold">  Projected p99 after: ~310ms. Refactor 4 files. Run tests?</span></p>
+        <p class="term-line"><span class="t-prompt">›</span> <span class="t-cmd">yes, do it and show me the diff first</span></p>
+        <p class="term-line"><span class="t-ok">  ✓ Refactored. 12 tests passed. p99 improved 63%.</span></p>
+        <p class="term-line"><span class="t-prompt">›</span> <span class="t-cmd">commit and open a PR</span><span class="cursor"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">Each section is self-contained — expand any one to start</div>
+</header>
+
+<nav class="topnav" aria-label="Page sections">
+  <a href="#what">01 What it is</a>
+  <a href="#architecture">02 Architecture</a>
+  <a href="#capabilities">03 Capabilities</a>
+  <a href="#economics">04 Economics</a>
+  <a href="#security">05 Security</a>
+  <a href="#java">06 Java walkthrough</a>
+  <a href="#limits">07 Limitations</a>
+  <a href="#personas">09 Personas</a>
+  <a href="#reference">10 Reference</a>
+</nav>
+
+<main>
+
+<!-- ═══════════════ 01 WHAT ═══ -->
+<section class="section" id="what">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">01</div>
+  <div>
+    <div class="section-label">What Claude Code is</div>
+    <h2 class="section-title">Claude Code is an AI-powered terminal that reads your codebase, reasons about it, and executes engineering work — with your approval.</h2>
+    <p class="lead">It is not autocomplete. It is not a search engine over Stack Overflow. It is a system that holds your entire codebase in working memory, understands intent expressed in natural language, and executes changes through a deterministic tool layer — bash, file I/O, git, test runners — while you retain final judgment on every action.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="scene" style="margin-top:28px">
+  <div class="scene-label">Why this matters for junior engineers</div>
+  Riya joined a fintech team six months ago. The payment microservice had 28,000 lines of Java she'd never touched. Her senior engineer was on leave. A regression surfaced at 11 PM: transaction confirmations were timing out for users in Southeast Asia. Before Claude Code, she'd have spent three hours tracing call graphs, reading logs, and guessing. Instead, she described the symptom. Claude read the service, found the blocking JDBC call behind a CDN with 300ms added latency for that region, proposed a fix, and ran the integration tests. She shipped a patch at midnight. The senior engineer reviewed it in the morning and called it clean. That is what Claude Code actually does in practice.
+</div>
+
+<div class="grid-2" style="margin-top:28px">
+  <div class="panel white">
+    <span class="tag">What it is</span>
+    <h3>A codebase-aware collaborator</h3>
+    <p>Claude Code reads your entire project — source files, configs, test suites, git history — and maintains that context across a session. When you ask it to fix a bug, it finds the root cause, not just the symptom. When you ask it to refactor, it traces the dependency graph. It knows your code better than any fresh pair of eyes in the first hour.</p>
+  </div>
+  <div class="panel white">
+    <span class="tag red">What it is not</span>
+    <h3>A replacement for engineering judgment</h3>
+    <p>Claude Code proposes. You decide. It generates a diff; you review it. It runs tests; you interpret the results. It drafts a commit message; you approve it. The system is designed to amplify your judgment, not circumvent it. Every destructive action — git push, file deletion, production command — requires explicit approval.</p>
+  </div>
+</div>
+
+<div class="compare-row" style="margin-top:28px">
+  <div class="compare-cell head">Without Claude Code</div>
+  <div class="compare-cell head">With Claude Code</div>
+  <div class="compare-cell">Onboard to a new codebase: 2–4 weeks of reading code, asking colleagues, building a mental model.</div>
+  <div class="compare-cell">Ask Claude to map the architecture. Get a dependency graph, entry points, and critical paths in 5 minutes. Still read the code — but know what to read.</div>
+  <div class="compare-cell">Debug a production regression: open 8 browser tabs, grep logs, read code, form a hypothesis, test manually.</div>
+  <div class="compare-cell">Describe the symptom. Claude reads logs, finds the callsite, proposes a fix, runs the test suite. You review the diff.</div>
+  <div class="compare-cell">Refactor a synchronous service to async: weeks of careful changes, test-driven, high risk of regression.</div>
+  <div class="compare-cell">Claude plans the migration, executes it in phases, runs tests after each phase, rolls back if a phase fails. You review each phase.</div>
+  <div class="compare-cell">Write tests for legacy code: tedious, slow, frequently abandoned because it feels like low-value work.</div>
+  <div class="compare-cell">Claude generates test scaffolding for any function. You review for correctness and add edge cases. Coverage goes up without suffering.</div>
+</div>
+
+<div class="chapter-bridge">
+  <div class="chapter-num">The key mental model</div>
+  Think of Claude Code the way you think of a senior engineer who just joined your team. They are fast, technically strong, and tireless. They will implement exactly what you ask. But they do not know your system's unwritten rules, your team's risk tolerance, or the business context behind a decision. <strong>You provide judgment. Claude provides execution.</strong> The partnership works when the division of responsibility is clear. It breaks when you treat Claude as an oracle rather than a collaborator.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 02 ARCHITECTURE ═══ -->
+<section class="section" id="architecture">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">02</div>
+  <div>
+    <div class="section-label">Architecture</div>
+    <h2 class="section-title">Three layers: intent processing, deterministic tool execution, and an adaptive feedback loop.</h2>
+    <p class="lead">Understanding how Claude Code actually works — not the marketing version — tells you where it is reliable, where it can fail, and how to structure your requests to get the best results. The architecture is not magic. It is a language model orchestrating a set of deterministic tools, with a feedback loop that lets it iterate on failures.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="framework-cards">
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div>
+        <div class="fc-title">Layer 1: Intent Processing</div>
+        <p style="margin:6px 0 0;font-size:14px;color:#4c453d">Natural language → structured reasoning</p>
+      </div>
+      <span class="fc-label">Semantic</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Claude receives your prompt along with the current context window: open files, recent terminal output, git status, any CLAUDE.md documentation you've written. It uses this to build a semantic model of your intent — not keywords, but the goal behind the words.</p>
+      </div>
+      <div>
+        <h4>Why this matters</h4>
+        <p>"Fix the payment bug" and "resolve the NullPointerException in PaymentService line 84" produce very different planning. The richer your context, the more accurate the intent model. Investing 30 minutes in a good CLAUDE.md pays dividends on every session.</p>
+      </div>
+      <div>
+        <h4>What can go wrong here</h4>
+        <p>Ambiguous prompts produce ambiguous plans. If Claude cannot distinguish between "clean up the build artifacts" and "remove all compiled output including shared libraries used by other services," it may choose the wrong interpretation. Specificity is a form of safety.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div>
+        <div class="fc-title">Layer 2: Tool Execution</div>
+        <p style="margin:6px 0 0;font-size:14px;color:#4c453d">Deterministic operations on real systems</p>
+      </div>
+      <span class="fc-label green">Deterministic</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>The tool surface</h4>
+        <p>Claude Code's tools are deterministic: <code>Read</code>, <code>Write</code>, <code>Edit</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, <code>Git</code> (via Bash), <code>WebFetch</code>, <code>Agent</code>. Each tool has a defined input/output contract. When Claude calls <code>Grep</code>, it receives real filesystem results. When it runs <code>Bash</code>, it gets real stdout/stderr. The model's reasoning is probabilistic; the tools are not.</p>
+      </div>
+      <div>
+        <h4>Parallelism</h4>
+        <p>Claude calls independent tools in parallel. When analyzing a service, it might simultaneously grep for all call sites, read the service class, and check test coverage — then synthesize the results. This is why codebase analysis feels fast: it is parallel I/O, not sequential reading.</p>
+      </div>
+      <div>
+        <h4>Permission layer</h4>
+        <p>Risky tools — anything that modifies files, runs shell commands, or touches remote systems — require your approval unless you've pre-authorized them in <code>.claude/settings.json</code>. You can grant always-allow for specific tools in trusted contexts and require confirmation for everything else. This is your safety layer.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div>
+        <div class="fc-title">Layer 3: Feedback Loop</div>
+        <p style="margin:6px 0 0;font-size:14px;color:#4c453d">Observe → reason → iterate</p>
+      </div>
+      <span class="fc-label gold">Adaptive</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>After each tool call, Claude observes the result and updates its reasoning. A test that fails is not a stop condition — it is new information. Claude reads the stack trace, locates the assertion that failed, understands why the refactor broke it, and adjusts. This loop continues until tests pass or Claude hits a genuine blocker.</p>
+      </div>
+      <div>
+        <h4>The iteration budget</h4>
+        <p>Claude will iterate on failures, but it has a practical limit. After several failed attempts at the same problem, it will surface the blocker to you rather than continue spinning. This is intentional — it prevents runaway loops that burn tokens without making progress. When Claude says "I'm stuck," take it seriously.</p>
+      </div>
+      <div>
+        <h4>Context preservation across iterations</h4>
+        <p>The full conversation — every prompt, tool result, and intermediate reasoning step — stays in the context window until it is summarized. This means Claude remembers what it tried, why it failed, and what constraints you gave it. Long sessions eventually compress earlier context; be explicit about critical constraints if a session runs long.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h3 style="margin-top:46px;margin-bottom:18px;font-size:27px">How a real request flows</h3>
+
+<div class="trace">
+  <div class="trace-head">
+    <div class="trace-dot pulse"></div>
+    Execution trace — "find all unhandled exceptions in the order service"
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what">Type: <code>"find all unhandled exceptions in the order service"</code>. Claude receives this with your current context window.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Plans: I need to (1) locate the order service files, (2) grep for exception-related patterns, (3) read surrounding context, (4) classify each as handled or unhandled. Calls Glob and Grep in parallel.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who tool">Glob + Grep</div>
+    <div class="trace-what">Glob finds <code>OrderService.java</code>, <code>OrderRepository.java</code>, <code>OrderController.java</code>. Grep scans all three for <code>catch\s*\(Exception</code>, <code>throws</code>, <code>RuntimeException</code>. Returns 23 matches. <span class="outcome active">parallel</span></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Reads 23 matches in context. Identifies 4 catch blocks that silently swallow exceptions (no logging, no rethrow). Reads surrounding method signatures to understand caller expectations.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who out">Output</div>
+    <div class="trace-what">Returns a structured report: 4 unhandled locations, each with file, line number, exception type, and suggested fix (log + rethrow, or return Result type). Asks: "Want me to fix these now?" <span class="outcome pass">done</span></div>
+  </div>
+</div>
+
+<div class="callout info" style="margin-top:28px">
+  <strong>Multi-agent architecture:</strong> For complex tasks — security audits, large refactors, comprehensive code reviews — Claude Code can spawn subagents. Each runs in isolated context, works on a subproblem, and returns results to the orchestrating session. Subagents protect the main context window from being flooded with intermediate results. They cost more tokens but enable work at a scale a single session cannot hold.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 03 CAPABILITIES ═══ -->
+<section class="section" id="capabilities">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">03</div>
+  <div>
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title">Core capabilities are available on day one. Advanced patterns take two to four weeks to develop fluency with.</h2>
+    <p class="lead">The mistake most junior engineers make is using Claude Code only for autocomplete-scale tasks: "write this function," "explain this line." Those use cases barely touch the capability surface. The real leverage comes from session-scale and codebase-scale tasks — the ones that would normally take days.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="principle-list" style="margin-top:28px">
+  <div class="principle">
+    <h4>Core: Codebase navigation and explanation</h4>
+    <p>Ask Claude to map a service, trace a data flow, or explain a complex function. It reads the relevant files, traces dependencies, and produces a structured explanation in plain language. Especially powerful for onboarding: "explain the auth flow from login request to session token" saves hours of reading.</p>
+  </div>
+  <div class="principle">
+    <h4>Core: Targeted edits with diff preview</h4>
+    <p>Describe the change you want. Claude proposes a diff. You review and approve. The edit tool sends only the changed lines — not a full file rewrite. For small changes in large files, this is both safer and faster than manual editing. Claude won't touch anything outside the scope you described.</p>
+  </div>
+  <div class="principle">
+    <h4>Core: Test execution and failure diagnosis</h4>
+    <p>Tell Claude to run your test suite. It executes, streams output, reads failures, identifies root causes, and iterates on fixes. If a test was flawed (wrong assertion, missing mock), Claude will tell you — it doesn't blindly patch tests to pass. The distinction between a failing test revealing a bug and a failing test revealing a bad test matters, and Claude understands it.</p>
+  </div>
+  <div class="principle">
+    <h4>Core: Git workflow — branches, commits, PRs</h4>
+    <p>Claude authors semantically meaningful commit messages, stages the right files, pushes to the correct branch, and creates pull requests via GitHub CLI. It will not force-push to main, will not commit files that look like secrets, and will not skip pre-commit hooks. These are hard guards, not best-effort reminders.</p>
+  </div>
+  <div class="principle">
+    <h4>Advanced: Multi-phase refactors with rollback planning</h4>
+    <p>For large refactors — async migration, dependency upgrade, API redesign — Claude plans in phases, executes each phase, runs tests, and checkpoints progress. If a phase fails, it can roll back to the last clean state. You approve the plan before execution begins and each phase before it runs.</p>
+  </div>
+  <div class="principle">
+    <h4>Advanced: Parallel multi-agent tasks</h4>
+    <p>Security audits, comprehensive code reviews, large codebase migrations — these require more context than a single session can hold. Spawn specialized agents in parallel: one agent reviews security, another checks performance, a third audits compliance. Results are synthesized into a single report. This is how senior architects work at scale.</p>
+  </div>
+  <div class="principle">
+    <h4>Advanced: Hooks and automated workflows</h4>
+    <p>Claude Code hooks allow you to attach behavior to events: before a tool runs, after Claude stops, when a file changes. Teams use hooks to enforce standards automatically — run the linter before every edit, post a summary to Slack when Claude finishes a session, require security review before any bash execution. Hooks are shell commands, not Claude invocations; they are deterministic and fast.</p>
+  </div>
+  <div class="principle">
+    <h4>Advanced: Remote agents and scheduled tasks</h4>
+    <p>Schedule Claude agents to run on cron — nightly security scans, weekly dependency audits, automated test generation for new code. Remote agents run in Anthropic's infrastructure, not your machine, and post results wherever you configure (Slack, GitHub Issues, email). As of May 2026, this is available in Claude Code's Pro and Enterprise tiers.</p>
+  </div>
+</div>
+
+<div class="callout gold-callout" style="margin-top:28px">
+  <strong>The leverage gradient:</strong> A function-level task saves minutes. A session-level task (debug, refactor a class) saves hours. A codebase-level task (migration, audit, architectural analysis) saves days to weeks. Your time investment in learning Claude Code's advanced patterns pays compounding returns on every large task you face.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 04 ECONOMICS ═══ -->
+<section class="section" id="economics">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">04</div>
+  <div>
+    <div class="section-label">Economics and usage tradeoffs</div>
+    <h2 class="section-title">Token cost is real. Engineer time is more expensive. The math almost always favors Claude Code — but not blindly.</h2>
+    <p class="lead">As of May 2026, Claude's API pricing is approximately $3 per million input tokens and $15 per million output tokens, with prompt cache hits at roughly 10% of input cost. A typical Claude Code session costs $0.05–$2.00. A multi-agent loop on a complex task can reach $10–$30. At senior engineer hourly rates, Claude Code is rarely expensive relative to the time it saves — but careless usage adds up.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="table-wrap" style="margin-top:28px">
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Typical cost</th>
+        <th>Time saved</th>
+        <th>ROI signal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Explain a 200-line function</td>
+        <td>$0.02–0.05</td>
+        <td>15–30 min</td>
+        <td>Always positive. Use freely.</td>
+      </tr>
+      <tr>
+        <td>Targeted bug fix in known file</td>
+        <td>$0.05–0.20</td>
+        <td>30–90 min</td>
+        <td>Always positive.</td>
+      </tr>
+      <tr>
+        <td>Debug production regression from logs</td>
+        <td>$0.20–1.00</td>
+        <td>2–6 hours</td>
+        <td>Strongly positive. Downtime cost alone justifies it.</td>
+      </tr>
+      <tr>
+        <td>Refactor a service (10–20 files)</td>
+        <td>$1–5</td>
+        <td>1–3 days</td>
+        <td>Positive. Plan the task carefully to avoid rework.</td>
+      </tr>
+      <tr>
+        <td>Multi-agent security audit</td>
+        <td>$10–30</td>
+        <td>3–5 days</td>
+        <td>Positive if the codebase matters. Expensive if used on throwaway code.</td>
+      </tr>
+      <tr>
+        <td>Nightly scheduled dependency scan</td>
+        <td>$5–15/run</td>
+        <td>Ongoing risk reduction</td>
+        <td>Budget it explicitly. Track cumulative monthly cost.</td>
+      </tr>
+      <tr>
+        <td>Continuous "does my code work" loop</td>
+        <td>Unbounded</td>
+        <td>None</td>
+        <td>Negative. Use your IDE's native feedback. Reserve Claude for genuine complexity.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h3 style="margin-top:46px;margin-bottom:18px;font-size:27px">Three economics mistakes junior engineers make</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Mistake 1: Using agents for everything</div>
+      <span class="fc-label red">Costly</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Spawning a multi-agent loop for a task that a single focused prompt could handle. Agents are 3–10× more expensive than single-session interactions. They are the right tool for tasks that require more context than one session can hold — not for every question.</p>
+      </div>
+      <div>
+        <h4>The fix</h4>
+        <p>Start with a single, well-scoped session. Narrow the scope. If the task genuinely requires 5+ independent research threads that cannot be sequenced, then use agents. Otherwise, a focused session is faster, cheaper, and easier to audit.</p>
+      </div>
+    </div>
+  </div>
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Mistake 2: Broad prompts that force exploration</div>
+      <span class="fc-label red">Wasteful</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>"Refactor the payment system" forces Claude to explore the entire codebase before it can plan. You pay tokens for exploration that you could eliminate by scoping: "Refactor PaymentService.processOrder() to use CompletableFuture. Keep the HTTP contract unchanged."</p>
+      </div>
+      <div>
+        <h4>The fix</h4>
+        <p>Know your codebase well enough to point Claude at the right files. Use Claude to explore unfamiliar code, then use that knowledge to scope future tasks tightly. Exploration is a one-time cost; tight prompts pay it back on every subsequent task.</p>
+      </div>
+    </div>
+  </div>
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Mistake 3: Ignoring prompt cache for repeated tasks</div>
+      <span class="fc-label red">Missed savings</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Running the same analysis repeatedly — daily security reviews, nightly test runs — without using prompt caching. The first call costs full price. Subsequent calls within 5 minutes cost 10% of input tokens. For scheduled agents, cache hits can reduce costs by 80–90%.</p>
+      </div>
+      <div>
+        <h4>The fix</h4>
+        <p>For scheduled or repeated tasks, structure your system prompt to be cache-friendly: stable content first, variable content last. The Anthropic SDK supports prompt caching directly. Teams running nightly audits cut costs from $20/run to $3/run with this pattern alone.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout info" style="margin-top:28px">
+  <strong>Track your costs:</strong> Anthropic's console shows token usage per API key. Set a monthly budget. Review it weekly until you understand your team's usage pattern. Most teams find their costs stabilize after 4–6 weeks as engineers develop better prompting habits. Runaway costs almost always trace to one of the three mistakes above.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 05 SECURITY ═══ -->
+<section class="section" id="security">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">05</div>
+  <div>
+    <div class="section-label">Security architecture and risks</div>
+    <h2 class="section-title">Claude Code operates across three trust boundaries. Understanding them is not optional if you work with sensitive code.</h2>
+    <p class="lead">Claude Code reads your files, executes shell commands, and sends context to Anthropic's API. In a regulated environment — fintech, healthcare, defense — this is not a minor detail. The system has strong defaults, but you need to understand where the trust boundaries are and what they mean for your specific risk profile.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="grid-3" style="margin-top:28px">
+  <div class="panel white">
+    <span class="tag">Boundary 1</span>
+    <h3>Your local machine</h3>
+    <p>Claude Code reads files and executes commands with your user permissions. If your machine is compromised, Claude Code is compromised. Standard hygiene applies: locked screen, strong credentials, full-disk encryption, no running Claude Code as root.</p>
+  </div>
+  <div class="panel white">
+    <span class="tag">Boundary 2</span>
+    <h3>Anthropic's API</h3>
+    <p>Your prompts and codebase context travel to Anthropic's servers for inference. Anthropic is SOC 2 Type II certified and contractually commits not to train on customer API data. This is still the cloud — not zero-trust. Treat it as a trusted third party, not your own datacenter.</p>
+  </div>
+  <div class="panel white">
+    <span class="tag">Boundary 3</span>
+    <h3>Third-party integrations</h3>
+    <p>MCP servers extend Claude's reach to GitHub, Google Drive, cloud CLIs, internal APIs. Each integration is a trust extension. Every server you add expands the blast radius of a compromise. Audit each one. Grant minimum necessary scope.</p>
+  </div>
+</div>
+
+<h3 style="margin-top:46px;margin-bottom:18px;font-size:27px">Threat model</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Prompt injection via untrusted content</div>
+      <span class="fc-label red">Real risk</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>How it works</h4>
+        <p>An attacker embeds instructions in a code comment, error message, or file that Claude reads. If Claude treats the embedded content as instructions rather than data, it may take unintended actions — exfiltrating code, modifying files, or changing behavior to mask a backdoor.</p>
+      </div>
+      <div>
+        <h4>Claude's protection</h4>
+        <p>Claude Code's training includes prompt injection resistance. It is more robust than a naive LLM, but not theoretically immune. Adversarial content crafted specifically to exploit this attack surface remains a realistic concern in high-value targets.</p>
+      </div>
+      <div>
+        <h4>Your mitigation</h4>
+        <p>Do not ask Claude to act on untrusted content without inspection. Never pipe raw API responses, user-supplied data, or external log files directly into a Claude session without reviewing them first. Treat this like SQL injection: the defense is architectural, not just relying on the framework.</p>
+      </div>
+    </div>
+  </div>
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Credential and secret exposure</div>
+      <span class="fc-label red">Real risk</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>How it works</h4>
+        <p>Claude reads a <code>.env</code> file, a hardcoded credential in a config file, or an AWS key in git history. That content travels to Anthropic's API. Even with contractual data protections, this is an unnecessary exposure vector.</p>
+      </div>
+      <div>
+        <h4>Your mitigation</h4>
+        <p>Never store secrets in files Claude can read. Use proper secrets management: AWS Secrets Manager, HashiCorp Vault, environment variables injected at runtime (not stored in files). Add <code>.env</code> and credential patterns to your <code>.gitignore</code> and verify Claude Code respects it. If you accidentally expose a secret, rotate it immediately — assume it is compromised.</p>
+      </div>
+    </div>
+  </div>
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Claude generates vulnerable code</div>
+      <span class="fc-label gold">Persistent risk</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>How it works</h4>
+        <p>Claude generates code that passes your tests but contains a SQL injection, path traversal, SSRF, or race condition. Your tests don't exercise that path. The code ships. The vulnerability is discovered in production.</p>
+      </div>
+      <div>
+        <h4>Why this persists</h4>
+        <p>Claude is not a security scanner. It produces code that is plausible and functional but does not perform formal security verification. Security properties that require reasoning about adversarial inputs — trust boundaries, injection vectors, authorization checks — are exactly the places where language model generation is weakest.</p>
+      </div>
+      <div>
+        <h4>Your mitigation</h4>
+        <p>Review all AI-generated code on security-critical paths. Run SAST (SonarQube, Semgrep) on every PR. Fuzz test input handling code. Treat Claude as a junior contributor who is technically strong but has never operated under adversarial conditions.</p>
+      </div>
+    </div>
+  </div>
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Destructive command misinterpretation</div>
+      <span class="fc-label">Manageable</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>How it works</h4>
+        <p>An ambiguous prompt produces a destructive interpretation. "Clean up old data" becomes a command that drops a production table. "Remove the test environment" removes more than intended.</p>
+      </div>
+      <div>
+        <h4>Claude's protection</h4>
+        <p>Claude Code requires explicit approval for destructive operations. It will show you the command before running it, flag irreversible operations, and refuse to force-push to main or skip pre-commit hooks without your explicit request.</p>
+      </div>
+      <div>
+        <h4>Your mitigation</h4>
+        <p>Be specific. "Remove all <code>*.o</code> files from the <code>build/</code> directory" is unambiguous. "Clean up old data" is not. The specificity of your prompt is your first line of defense against misinterpretation. Never approve a bash command you have not read.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout warn" style="margin-top:28px">
+  <strong>Regulated environments:</strong> PCI DSS, HIPAA, FedRAMP, and similar frameworks impose constraints on where customer data can travel. Before using Claude Code in a regulated environment, work with your security and compliance team to understand whether codebase context (which may include PII-adjacent data structures, schema definitions, or configuration) is permissible to send to Anthropic's API. For highly sensitive systems, consider whether air-gapped or on-premise alternatives exist.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 06 JAVA WALKTHROUGH ═══ -->
+<section class="section" id="java">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">06</div>
+  <div>
+    <div class="section-label">Real-world walkthrough</div>
+    <h2 class="section-title">A Java payment microservice: from synchronous bottleneck to async throughput, step by step.</h2>
+    <p class="lead">This walkthrough follows a real class of problem: a legacy Java service with synchronous I/O that degrades under load. The goal is an async migration using CompletableFuture. The walkthrough shows exactly what you type, what Claude does, and what decisions remain yours — not as a summary, but as a trace of the actual session flow.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="scene" style="margin-top:28px">
+  <div class="scene-label">The situation</div>
+  You are three months into the job. The <code>payment-service</code> has been escalated by the SRE team: p99 latency is 840ms under 200 requests per second. The SLA is 500ms. The service was written four years ago by engineers who are no longer at the company. It has 31,000 lines of Java, one architecture diagram that is out of date, and test coverage at 61%. Your senior engineer is at a conference. You have a week to ship a fix.
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:14px;font-size:27px">Step 1 — Understand the system</h3>
+<p style="color:#514a42;font-size:15px;margin-bottom:18px">You do not start by reading 31,000 lines. You start by asking Claude to orient you.</p>
+
+<div class="trace">
+  <div class="trace-head">
+    <div class="trace-dot"></div>
+    Session — initial codebase orientation
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Map the critical path for a payment request — from HTTP entry point to database write. Show me which classes are involved and where the blocking I/O is."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who tool">Glob + Grep</div>
+    <div class="trace-what">Locates <code>PaymentController.java</code>, <code>PaymentService.java</code>, <code>OrderRepository.java</code>, <code>UserCreditService.java</code>. Greps for <code>@PostMapping</code>, <code>JdbcTemplate</code>, <code>RestTemplate</code>, <code>EntityManager</code>. <span class="outcome active">parallel</span></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Reads the four files. Traces: <code>POST /payments</code> → <code>PaymentController.process()</code> → <code>PaymentService.processOrder()</code> → sequential calls: <code>UserCreditService.validateCredit()</code> (HTTP, 120–480ms) then <code>OrderRepository.reserveInventory()</code> (JDBC, 60–210ms) then <code>SqsClient.publish()</code> (IO, 15–50ms). All three are sequential and blocking. Thread held for 195–740ms per request before any response is sent.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who out">Output</div>
+    <div class="trace-what">Returns a structured call graph with timing estimates, flags the three sequential blocking operations, and notes that <code>validateCredit()</code> and <code>reserveInventory()</code> have no data dependency on each other — they can be parallelized. <span class="outcome pass">mapped</span></div>
+  </div>
+</div>
+
+<div class="chapter-bridge">
+  <div class="chapter-num">What just happened</div>
+  Claude found in 90 seconds what would have taken a junior engineer half a day of reading. More importantly, it identified the <strong>structural insight</strong> — the two calls have no data dependency, so they can run in parallel — which requires understanding the semantic relationship between operations, not just finding them. This is where language model reasoning adds value that grep alone cannot.
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:14px;font-size:27px">Step 2 — Plan the migration</h3>
+<p style="color:#514a42;font-size:15px;margin-bottom:18px">You now understand the problem. You ask Claude to design the solution before touching a line of code.</p>
+
+<div class="trace">
+  <div class="trace-head">
+    <div class="trace-dot"></div>
+    Session — refactor planning
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Plan a migration to parallelize validateCredit() and reserveInventory() using CompletableFuture.allOf(). Constraints: (1) HTTP contract unchanged, (2) no change to database transaction semantics, (3) all existing tests must pass."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Reads <code>PaymentServiceTest.java</code> (coverage: 14 test cases). Checks current transaction annotations (<code>@Transactional</code> on <code>processOrder()</code>). Identifies that <code>reserveInventory()</code> participates in the same transaction — parallelizing it requires moving transaction boundary. This is a non-trivial constraint.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who out">Output</div>
+    <div class="trace-what">Returns a two-phase plan: Phase 1 — extract credit validation out of the transaction boundary (it is read-only, no transaction needed). Phase 2 — parallelize the extracted credit call with the inventory reservation using <code>CompletableFuture.allOf()</code>, join results before the transaction commits. Estimates p99 improvement to 280–420ms. Asks for approval before proceeding. <span class="outcome pass">planned</span></div>
+  </div>
+</div>
+
+<div class="callout info" style="margin-top:18px">
+  <strong>The constraint catch:</strong> Claude identified that the <code>@Transactional</code> annotation on the method meant naive parallelization would not work. It found this by reading the test cases and the Spring Boot transaction semantics, not by you explaining it. This is the kind of implicit constraint that junior engineers routinely miss in manual refactors. Claude surfaced it in the planning phase, not after writing broken code.
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:14px;font-size:27px">Step 3 — Execute Phase 1</h3>
+<p style="color:#514a42;font-size:15px;margin-bottom:18px">You approved the plan. You ask Claude to execute Phase 1 and show you the diff.</p>
+
+<div class="trace">
+  <div class="trace-head">
+    <div class="trace-dot"></div>
+    Session — Phase 1 execution
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Execute Phase 1. Show me the diff before writing anything."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Produces the diff: removes <code>@Transactional</code> from <code>processOrder()</code>, adds it only to <code>reserveInventory()</code> and <code>updateBalance()</code>. Extracts <code>validateCredit()</code> call to before the transaction scope. 23 lines changed across 2 files.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Apply the diff and run the test suite."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who tool">Bash</div>
+    <div class="trace-what">Runs <code>mvn test -pl payment-service</code>. 14 tests. 2 failures: <code>PaymentServiceTest.testConcurrentOrders</code> and <code>PaymentServiceTest.testRollbackOnCreditFailure</code>.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Reads both failing tests. <code>testConcurrentOrders</code> assumed the credit check was inside the transaction (it mocked the transaction boundary incorrectly). <code>testRollbackOnCreditFailure</code> assumed a rollback would revert a credit check that is now outside the transaction — the rollback test assumption is wrong, not the code. Explains both. Asks: "Fix both tests, or do you want to review the rollback test first?"</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><code>"The rollback test assumption sounds wrong. Fix the concurrent test automatically. Show me the rollback test for my review."</code></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who out">Output</div>
+    <div class="trace-what">Fixes <code>testConcurrentOrders</code> automatically. Displays <code>testRollbackOnCreditFailure</code> with annotation explaining what the test assumed and why that assumption is no longer valid. You review, confirm the fix, Claude applies it. 14/14 tests pass. <span class="outcome pass">phase 1 complete</span></div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:14px;font-size:27px">Step 4 — Execute Phase 2 and validate</h3>
+<p style="color:#514a42;font-size:15px;margin-bottom:18px">Phase 1 cleaned the transaction boundary. Phase 2 adds the parallelism.</p>
+
+<div class="trace">
+  <div class="trace-head">
+    <div class="trace-dot"></div>
+    Session — Phase 2 + validation
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Execute Phase 2. Add the CompletableFuture.allOf() parallelism. Run tests. Then run the load test profile and report p99."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who claude">Claude</div>
+    <div class="trace-what">Modifies <code>PaymentService.processOrder()</code>: wraps <code>validateCredit()</code> and <code>reserveInventory()</code> in <code>CompletableFuture.supplyAsync()</code>, joins with <code>CompletableFuture.allOf()</code>, extracts results, proceeds to <code>SqsClient.publish()</code>. Adds a <code>ForkJoinPool</code> with bounded thread count to prevent unbounded thread growth under sustained load.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who tool">Bash</div>
+    <div class="trace-what">Runs test suite: 14/14 pass. Runs load test profile (<code>mvn gatling:test -Dgatling.simulationClass=PaymentLoadTest</code>). 200 rps, 5 minutes sustained. Output: p99 = 312ms. Previous p99: 840ms. Improvement: 63%.</div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who out">Output</div>
+    <div class="trace-what">Reports p99 improvement, thread pool utilization (peak 18 threads, well within pool size), no test failures, no timeout errors under load. Asks: "Create a commit and open a PR?" <span class="outcome pass">validated</span></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who user">You</div>
+    <div class="trace-what"><blockquote>"Yes. Commit message should explain the async migration and the p99 improvement. Branch: fix/async-payment-processing."</blockquote></div>
+  </div>
+  <div class="trace-row">
+    <div class="trace-who tool">Bash (git)</div>
+    <div class="trace-what">Creates branch, stages changed files (<code>PaymentService.java</code>, <code>PaymentServiceTest.java</code>, <code>pom.xml</code>), commits with message: "Parallelize credit validation and inventory reservation in payment processing. Uses CompletableFuture.allOf() with bounded ForkJoinPool. p99 latency reduced from 840ms to 312ms under 200 rps. Tests: 14/14 pass." Opens PR via GitHub CLI. <span class="outcome pass">shipped</span></div>
+  </div>
+</div>
+
+<div class="scene" style="margin-top:28px">
+  <div class="scene-label">The total time investment</div>
+  The session above, including reading time and decision points, took approximately 90 minutes. The same task done manually — reading the codebase, identifying the dependency, planning the transaction boundary change, implementing the parallelism, debugging the test failures, running the load test, writing the PR — would have taken a junior engineer 3–5 days. The senior engineer reviewing the PR in the morning noted one thing: the <code>ForkJoinPool</code> size should be configurable from environment variables, not hardcoded. Claude added that in 10 minutes. Total senior review time: 20 minutes.
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 07 LIMITATIONS ═══ -->
+<section class="section" id="limits">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">07</div>
+  <div>
+    <div class="section-label">Limitations and failure modes</div>
+    <h2 class="section-title">Claude Code fails in predictable ways. Knowing the patterns is what separates engineers who ship safely from engineers who get surprised.</h2>
+    <p class="lead">Every capability has a failure mode. Some failures are correctable mid-session. Others require you to step back and change your approach entirely. The engineers who get into trouble with Claude Code are not the ones who expect too little — they are the ones who expect too much, in the wrong direction.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="framework-cards">
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 1: Context window exhaustion</div>
+      <span class="fc-label red">High impact</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Claude's context window is 200,000 tokens (~150,000 lines of code). Large monolithic codebases exceed this. When Claude cannot fit all relevant files into context simultaneously, it sees only part of the picture. It may miss a dependency in a distant module, an override in a parent class, or a constraint defined in a file it hasn't read.</p>
+      </div>
+      <div>
+        <h4>How to recognize it</h4>
+        <p>Claude produces a change that is locally correct but breaks something elsewhere. Claude asks clarifying questions about things that are defined clearly in another file. Claude's plan ignores a component you know is relevant.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>Narrow scope before starting. Point Claude at specific files rather than asking it to explore broadly. Use the Explore subagent to identify relevant files first, then scope the main session tightly. For very large codebases, break tasks into sequenced sessions with explicit handoff context.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 2: Implicit constraint blindness</div>
+      <span class="fc-label red">Common</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Your codebase has unwritten rules: all database calls must complete within 200ms, all new endpoints require X-Ray tracing, all monetary amounts must be handled with <code>BigDecimal</code>, never <code>double</code>. Claude does not know these rules unless you tell it. It will generate code that violates them.</p>
+      </div>
+      <div>
+        <h4>How to recognize it</h4>
+        <p>Code review catches things Claude missed. Your CI linter fails on patterns Claude used. A senior engineer asks "why isn't this using <code>BigDecimal</code>?" You feel like you're constantly correcting the same class of mistakes.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>Write a <code>CLAUDE.md</code> in your project root. Document conventions, non-obvious constraints, team decisions, and anti-patterns. Claude reads this file at the start of every session. 30 minutes invested in a good <code>CLAUDE.md</code> eliminates a category of recurring corrections permanently.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 3: Confident hallucination of API details</div>
+      <span class="fc-label gold">Subtle</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>Claude references a library method that does not exist in your version, uses a configuration key that was deprecated in a release after its training cutoff, or describes a framework behavior that applies to a different major version. The code compiles but fails at runtime in a non-obvious way.</p>
+      </div>
+      <div>
+        <h4>Why this is hard to catch</h4>
+        <p>Claude is confident and fluent. It does not hedge on things it is wrong about. A hallucinated API call looks identical to a correct one in the generated code. You need a running system — not a language model — to validate API surfaces.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>Tests are your ground truth. If code compiles but tests fail on a specific method call, check the actual API documentation — do not accept Claude's explanation of the failure as authoritative. Use your IDE's autocomplete to validate API surfaces before approving a diff.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 4: Scope creep in "cleanup" tasks</div>
+      <span class="fc-label">Annoying</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>You ask Claude to "clean up this function." It removes dead code, refactors variable names, adds logging, and reorganizes the method — none of which you asked for. The diff is large, the review is harder than it should be, and the PR has changes you didn't intend.</p>
+      </div>
+      <div>
+        <h4>Why Claude does this</h4>
+        <p>Claude optimizes for "helpful" by default. A function with dead code and inconsistent variable names looks like an invitation to improve. Without explicit scope constraints, Claude treats adjacent improvements as part of the task.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>Constrain scope explicitly: "Remove only the unused variables in <code>processPayment()</code>. Do not change logic, add logging, or rename anything else." The more specific the exclusion, the cleaner the diff. Always read the full diff before approving — not just the lines you expected.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 5: Architectural authority confusion</div>
+      <span class="fc-label gold">Strategic risk</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>You ask Claude to "design the caching layer" or "choose the right database for this use case." Claude produces a confident, well-structured answer — but it is optimizing for general best practices, not your team's operational expertise, infrastructure constraints, or organizational risk tolerance.</p>
+      </div>
+      <div>
+        <h4>The real problem</h4>
+        <p>Claude does not know that your team has no experience with Redis Cluster, that your SRE team will not support Cassandra, or that your compliance framework requires all data at rest to stay in a specific region. These constraints are not in your codebase. They are in your organization.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>Use Claude to explore options and articulate tradeoffs. Use your team to make architectural decisions. "What are the tradeoffs between Redis and Memcached for our session cache use case?" is a great Claude task. "Which should we use?" is a team decision.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Failure mode 6: Long session drift</div>
+      <span class="fc-label">Manageable</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>What happens</h4>
+        <p>After 50+ messages, the earliest context in the session is compressed into a summary. Constraints you stated early in the session — "never modify the public API," "all monetary values use BigDecimal" — may be summarized away. Claude's behavior drifts from your original requirements.</p>
+      </div>
+      <div>
+        <h4>How to recognize it</h4>
+        <p>Claude repeats a mistake you corrected an hour ago. Claude proposes something that violates a constraint you stated at the beginning of the session. The behavior feels inconsistent with earlier turns.</p>
+      </div>
+      <div>
+        <h4>Mitigation</h4>
+        <p>For long tasks, repeat critical constraints periodically: "Reminder: we are not changing the public API." Break very long tasks into discrete sessions with explicit handoff summaries. A fresh session with a clear brief is often more effective than a stale session with drifted context.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h3 style="margin-top:46px;margin-bottom:18px;font-size:27px">Red flags in a live session</h3>
+
+<div class="principle-list">
+  <div class="principle">
+    <h4>🚩 Claude generates code that compiles but fails all tests, with no clear diagnosis</h4>
+    <p>This usually means semantic misunderstanding at the planning stage. Stop. Restart with a narrower scope and more explicit constraints. Do not ask Claude to iterate blindly — that burns tokens without converging.</p>
+  </div>
+  <div class="principle">
+    <h4>🚩 Claude repeats the same mistake after you correct it twice</h4>
+    <p>The constraint is not being held in context. State it explicitly at the top of your next message. If it happens a third time, add it to <code>CLAUDE.md</code> and start a fresh session.</p>
+  </div>
+  <div class="principle">
+    <h4>🚩 Claude's explanation of a framework behavior doesn't match the official documentation</h4>
+    <p>Trust the documentation, not Claude. Correct Claude explicitly and watch whether it adjusts. If it re-hallucinates, add the correct information as a constraint in your prompt.</p>
+  </div>
+  <div class="principle">
+    <h4>🚩 Claude proposes an architectural change you weren't expecting</h4>
+    <p>Do not approve it without understanding it fully. Ask Claude to explain the tradeoffs. Then take the decision to your team. Unexplained architectural proposals are exactly the place where good-sounding-but-wrong decisions get shipped.</p>
+  </div>
+  <div class="principle">
+    <h4>🚩 The token cost for this session is 5× what you expected</h4>
+    <p>You have likely allowed Claude to explore broadly when it could have been scoped tightly. Review what drove the cost. Adjust the task structure before continuing.</p>
+  </div>
+</div>
+
+</div>
+</section>
+
+<!-- ═══════════════ 09 PERSONAS ═══ -->
+<section class="section" id="personas">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">09</div>
+  <div>
+    <div class="section-label">Role-specific workflows</div>
+    <h2 class="section-title">Claude Code adapts to your role. These workflows show how different engineers use the same tool to solve different problems.</h2>
+    <p class="lead">Whether you build user interfaces, manage infrastructure, or ensure system reliability, Claude Code's core capabilities apply — but the way you use them differs. These sections show concrete examples for six common roles.</p>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<h3 style="margin-top:28px;margin-bottom:16px;font-size:27px">Frontend developers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Component refactor to hooks</div>
+      <span class="fc-label blue">React/TypeScript</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Convert class component to functional + hooks, maintain identical behavior.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads class component, traces <code>state</code>, lifecycle methods, traces refs. Refactors to <code>useState</code>, <code>useEffect</code>, <code>useRef</code>. Preserves lifecycle semantics (componentDidMount → effect with empty deps, etc.).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Visual regression testing, run test suite, verify no behavior change.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Accessibility audit (a11y)</div>
+      <span class="fc-label blue">WCAG 2.1</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Find all accessibility violations in form component (ARIA, keyboard nav, screen readers).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Scans JSX for missing <code>role</code>, <code>aria-label</code>, <code>tabIndex</code>, improper heading hierarchy. Identifies keyboard traps. Generates fixes with WCAG mappings.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test with screen reader (NVDA/JAWS), keyboard navigation, run axe audit.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.10–0.25 | <strong>Time saved:</strong> 30–60 minutes</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: CSS breakpoint debugging</div>
+      <span class="fc-label blue">Responsive Design</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Mobile view breaks on tablets. Find and fix the conflicting breakpoints.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Greps all media queries across CSS/styled-components, identifies overlaps, explains cascade, suggests modern flexbox/grid alternatives instead of floats.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test on actual devices/DevTools, verify no regression on desktop.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.08–0.20 | <strong>Time saved:</strong> 45–90 minutes</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Performance optimization</div>
+      <span class="fc-label blue">React Performance</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>List component renders slowly with 1000 items. Identify and fix.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Identifies missing <code>React.memo</code>, unnecessary re-renders, finds expensive computations. Suggests <code>useMemo</code>, <code>useCallback</code>, virtualization (react-window). Adds performance instrumentation.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Profile with DevTools, measure FPS before/after, verify no visual regressions.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.45 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Form validation framework</div>
+      <span class="fc-label blue">React Hook Form</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate form with validation, error messages, async field validators.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates hook-based form using react-hook-form, generates Zod/Yup schema, adds async validators (email uniqueness, username availability), generates accessible error UI.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test validation rules, async behavior, error states, accessibility.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">DevOps engineers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Infrastructure review & optimization</div>
+      <span class="fc-label blue">Terraform/CloudFormation</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Review Terraform modules for cost, security, compliance violations.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Scans <code>.tf</code> files for unused resources, hardcoded secrets, over-provisioned instances, missing encryption, improper IAM policies. Suggests reserved instances, rightsizing, cost tagging.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review recommendations, test in staging, validate tagging compliance.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.80 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Pipeline debugging</div>
+      <span class="fc-label blue">CI/CD (GitHub Actions, GitLab)</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Docker build fails silently in pipeline. Find root cause and fix.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads Dockerfile, pipeline YAML, build logs. Identifies layer caching issues, missing args, base image problems, slow builds. Suggests multi-stage builds, caching strategy improvements.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test fix in staging pipeline, verify build time improvement.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Observability setup</div>
+      <span class="fc-label blue">CloudWatch/Prometheus</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create dashboards + alarms for microservice (metrics, logs, traces).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads service code, generates CloudFormation/Terraform for dashboards (latency, error rate, throughput), defines intelligent alarm thresholds, creates runbook links, suggests log group structure.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test alarms with synthetic traffic, verify alert routing.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Secrets management</div>
+      <span class="fc-label blue">AWS Secrets Manager/HashiCorp Vault</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Audit codebase for hardcoded credentials, migrate to Secrets Manager.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Greps for API keys, passwords, connection strings in code. Generates Terraform for Secrets Manager, creates secret rotation policies, updates application code to fetch secrets at runtime.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test secret rotation, verify no hardcoded remnants, audit access logs.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Disaster recovery plan</div>
+      <span class="fc-label blue">IaC & Runbooks</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate DR infrastructure, failover runbooks, RTO/RPO validation.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates standby infrastructure in secondary region, generates Terraform for cross-region replication, writes runbooks for manual failover, calculates RTO/RPO, creates backup validation scripts.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Execute DR drills, measure actual failover time, verify data consistency.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–0.90 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">SRE engineers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Incident post-mortem</div>
+      <span class="fc-label blue">Root Cause Analysis</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Analyze 2-hour outage logs + metrics, generate RCA and systemic fixes.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Parses logs, builds timeline, correlates failures with metric spikes, identifies cascading failures, suggests preventive measures (timeouts, circuit breakers, alerting improvements, chaos tests).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Verify timeline accuracy, implement preventive measures, add tests.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–1.20 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Capacity & scaling</div>
+      <span class="fc-label blue">Auto-scaling Policies</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design auto-scaling for variable load (20–500 rps), optimize cost.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes historical load patterns, calculates required headroom, generates scaling thresholds, suggests instance types, balances cost vs. redundancy, generates scaling policy code.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test with synthetic load, verify cost projections, monitor real-world performance.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Chaos engineering</div>
+      <span class="fc-label blue">Gremlin/Chaoskube</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design chaos tests for DB failover, region loss, dependency timeouts.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads architecture, generates chaos experiments (kill pods, inject latency, block traffic), predicts failure modes, suggests mitigation strategies, generates test runbooks.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Execute experiments, measure recovery time, document learnings.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.75 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: SLO monitoring</div>
+      <span class="fc-label blue">Error budgets & alerts</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Define SLOs (99.9% availability), calculate error budgets, set alerts.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads service requirements, defines SLI metrics (latency p99, error rate), calculates error budget, generates alerting thresholds that notify before budget exhaustion, creates dashboard.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test alert sensitivity, refine SLO targets based on business needs.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Runbook generation</div>
+      <span class="fc-label blue">Operational procedures</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create runbooks for common incidents (database failover, deployment rollback, cache clear).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes architecture, generates step-by-step runbooks with validation checks, shell commands, rollback procedures, escalation paths, estimated time for each step.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Execute runbooks in staging, time them, refine for clarity.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Kubernetes specialists (YAML authors)</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Manifest generation</div>
+      <span class="fc-label blue">Deployment/StatefulSet/DaemonSet</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate K8s manifests (Deployment, Service, ConfigMap) with health checks, limits, security.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads application code, generates Deployment/StatefulSet with correct probes (liveness/readiness), adds resource requests/limits, generates ServiceAccount, NetworkPolicy, Pod Security Policy. Validates with kubeval.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review security contexts, test health probes, validate resource usage.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Helm chart creation</div>
+      <span class="fc-label blue">Helm 3 templating</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Convert static manifests to parameterized Helm chart.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Identifies parameterizable values (replicas, image, resources), generates values.yaml with defaults, creates templates with {{ .Values.* }}, generates Chart.yaml, adds helpers and NOTES.txt.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test <code>helm install</code>, verify template rendering, test upgrades.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Kustomize overlays</div>
+      <span class="fc-label blue">Multi-env configs</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate dev/staging/prod overlays with different replicas, limits, domains.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates base manifest, generates kustomization.yaml for each environment with patches for replicas, resources, image tags, ConfigMap overrides.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test <code>kustomize build</code> for each environment, verify correctness.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Network policies</div>
+      <span class="fc-label blue">K8s security</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate NetworkPolicies to restrict traffic between services (zero-trust).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads service architecture, generates NetworkPolicies for ingress/egress rules, creates egress policies for DNS, external APIs, blocks unexpected traffic by default.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test connectivity between services, verify external calls still work.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Operator & CRD</div>
+      <span class="fc-label blue">Custom Resources</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create CustomResourceDefinition + Operator for application lifecycle.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates CRD YAML, creates Operator skeleton (using Operator SDK), generates controller logic for reconciliation, adds status/conditions, generates example CR manifests.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Implement reconciliation logic, test CR creation/updates, verify operator restarts.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–0.90 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Web security professionals</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Vulnerability audit</div>
+      <span class="fc-label red">OWASP Top 10</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Scan codebase for SQL injection, XSS, CSRF, insecure deserialize, secrets.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads code, identifies risky patterns (string concat in SQL, unsanitized templates, hardcoded secrets), generates proof-of-concept payloads, rates severity, suggests framework-specific fixes.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Prioritize findings, verify exploitability, implement fixes, retest.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.50–1.50 | <strong>Time saved:</strong> 4–8 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Security headers</div>
+      <span class="fc-label red">CSP, CORS, Headers</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Define CSP, CORS, HSTS policies for multi-tenant SaaS app.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes app architecture (CDN, third-party scripts, APIs), generates restrictive-by-default policies, explains bypass vectors, provides implementation for framework (Express, Django, Rails).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test policies, monitor violations, refine as needed.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Auth flow audit</div>
+      <span class="fc-label red">JWT/OAuth2/Session</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Verify JWT implementation, token expiry, refresh tokens, permissions.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Traces token generation → validation → refresh, identifies timing attacks, incomplete checks, insecure storage, suggests fixes (rotation, rate limiting, secure cookies).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Implement fixes, penetration test, monitor token usage.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.75 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Input validation</div>
+      <span class="fc-label red">Data validation & sanitization</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Audit input validation across all endpoints (path traversal, XXE, zip bombs).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Identifies missing validation, unsafe deserialization, file upload vulnerabilities, generates validation schema, suggests library usage (Joi, Yup, Cerberus).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test with malicious inputs, fuzz test, verify rejection behavior.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Dependency scanning</div>
+      <span class="fc-label red">Vulnerability management</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Scan dependencies for known CVEs, prioritize updates, generate upgrade plan.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes package.json/requirements.txt, checks for known CVEs, assesses upgrade impact, generates upgrade plan (breaking changes, deprecations), creates test plan for each upgrade.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test dependency upgrades, verify functionality, monitor for regressions.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Project managers and technical leads</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Technical debt inventory</div>
+      <span class="fc-label plum">Risk prioritization</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Scan for technical debt: outdated dependencies, deprecated APIs, coverage gaps.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes codebase, generates inventory with effort estimates, risk scores, and refactor ordering that minimizes disruption. Suggests quick wins vs. long-term initiatives.</p>
+      </div>
+      <div>
+        <h4>You use this to</h4>
+        <p>Negotiate timeline, prioritize sprints, communicate risk to stakeholders.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–1.00 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Estimation support</div>
+      <span class="fc-label plum">Effort & timeline</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Estimate effort: monolith-to-microservices migration, architecture redesign.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Maps service boundaries, identifies hidden dependencies, estimates phases, flags risks (data consistency, testing), generates phased timeline with go/no-go gates.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review with team, adjust for team velocity, communicate to stakeholders.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.50–1.50 | <strong>Time saved:</strong> 4–8 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Onboarding docs</div>
+      <span class="fc-label plum">Knowledge transfer</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate onboarding docs for new team member on 50K-line codebase.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Maps architecture, generates ASCII diagrams, explains entry points, traces request path end-to-end, identifies critical reading order, creates learning checklist.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review for accuracy, customize for team, measure ramp-up time.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.70 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Risk assessment</div>
+      <span class="fc-label plum">Change impact analysis</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Assess risk of upgrading core framework (Rails 5 → 7, React 16 → 18).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes dependency tree, identifies breaking changes, scans codebase for deprecated patterns, estimates refactor scope, suggests phased upgrade strategy.</p>
+      </div>
+      <div>
+        <h4>You present to</h4>
+        <p>Stakeholders with clear risk/benefit tradeoffs, timeline, contingency plan.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.35–0.80 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Process automation</div>
+      <span class="fc-label plum">Operations efficiency</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Identify manual processes that can be automated (deploys, releases, reporting).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes current workflows, identifies automation opportunities, estimates effort vs. time savings, prioritizes by ROI.</p>
+      </div>
+      <div>
+        <h4>You use to</h4>
+        <p>Plan team roadmap, reduce toil, improve operational efficiency.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Database administrators and data engineers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Schema migration</div>
+      <span class="fc-label blue">Zero-downtime changes</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Add column to 10M-row table without downtime, no app changes needed.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads schema, identifies dependencies, generates shadow column strategy with data population, creates atomic cutover script, generates rollback procedure, estimates execution time and locks.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test on staging, measure execution time, schedule during maintenance window.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Query optimization</div>
+      <span class="fc-label blue">Index & execution plans</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Report query runs in 45 seconds. Find and fix bottleneck.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads query and schema, identifies missing indexes, suggests rewrites, generates execution plans, recommends covering indexes, estimates improvement (target: 2–5 seconds).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test on staging, measure latency reduction, monitor production performance.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Pipeline validation</div>
+      <span class="fc-label blue">ETL/data quality</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>ETL fails silently — records missing in warehouse, no error logs.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Traces data flow (source → transform → load), identifies schema mismatches, type conversion errors, null handling gaps, generates reconciliation queries, finds root cause.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Fix pipeline, add validation checks, rerun with reconciliation.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Backup & recovery</div>
+      <span class="fc-label blue">Disaster recovery</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design backup strategy with RTO/RPO targets, test recovery.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates backup scripts (full + incremental), calculates RPO from transaction volume, generates recovery procedures, creates point-in-time recovery playbook, validates backup integrity checks.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test recovery procedures, measure recovery time, document RTO/RPO.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.70 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Capacity planning</div>
+      <span class="fc-label blue">Growth projections</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Estimate database growth, plan scaling (sharding, read replicas).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes growth trends, projects space/QPS growth, suggests scaling strategy (vertical, horizontal, sharding), estimates cost per strategy, generates implementation plan.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review growth assumptions, select strategy, implement gradually.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Quality assurance and test engineers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Test coverage generation</div>
+      <span class="fc-label blue">Coverage gaps → tests</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Improve coverage from 62% → 80% by generating tests for untested paths.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Scans code, identifies coverage gaps, generates parameterized test cases for edge cases (null, boundaries, errors), follows team naming conventions, suggests test data.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review test correctness, ensure assertions are valid, run full suite.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.75 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Flaky test debugging</div>
+      <span class="fc-label blue">Race conditions & timing</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Test passes 80%, fails 20% — identify timing issue.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads test + implementation, identifies timing-dependent logic, race conditions, global state pollution, suggests fixes (synchronization, cleanup, deterministic mocks).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Implement fixes, run test 100+ times, verify stability.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Integration harness</div>
+      <span class="fc-label blue">Docker Compose + Testcontainers</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate integration tests for API endpoints with real dependencies.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates docker-compose.yml, creates harness with setup/teardown, writes parameterized endpoint tests (happy path, errors, edge cases), generates test data factories.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Run tests, verify dependency setup, add domain-specific assertions.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Performance testing</div>
+      <span class="fc-label blue">Load & stress testing</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate load tests, identify bottlenecks under stress.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates Gatling/JMeter/k6 test scripts for realistic load patterns, defines success criteria (p99 latency, error rate), generates performance baseline scripts, suggests ramp-up profiles.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Run tests, identify bottlenecks, measure before/after improvements.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Test data management</div>
+      <span class="fc-label blue">Fixtures & factories</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create reusable test data fixtures and factories for complex objects.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes domain model, generates factories/builders for all entities, creates fixtures for common scenarios (valid user, expired token, etc.), generates realistic test data.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review factories, add edge case combinations, maintain as domain evolves.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Cloud architects and solutions engineers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Multi-cloud strategy</div>
+      <span class="fc-label blue">AWS + GCP + Azure</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design IaC for AWS + GCP with cost optimization and failover.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes app requirements, generates Terraform modules for both clouds with identical interfaces, compares costs, suggests hybrid strategy (hot-warm-cold failover), generates drift detection.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review cost projections, test failover, stage in low-traffic environment.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–1.00 | <strong>Time saved:</strong> 3–6 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Serverless migration</div>
+      <span class="fc-label blue">Lambda + DynamoDB</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Convert monolith to serverless (Lambda, DynamoDB, API Gateway).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Maps functions to Lambda handlers, generates DynamoDB schema, creates API Gateway routes, generates IaC (CDK/Terraform), estimates cost savings vs. monolith.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test cold starts, verify latency, calculate savings, stage gradually.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.50–1.20 | <strong>Time saved:</strong> 4–8 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Compliance automation</div>
+      <span class="fc-label blue">SOC 2 / ISO 27001</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Implement compliance controls (encryption, logging, backup, access).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Maps compliance requirements to infrastructure controls, generates AWS Config rules, CloudTrail audit trails, creates evidence collection scripts, generates audit checklists.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review with compliance team, test audit collection, prepare for auditor review.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.35–0.85 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Cost optimization</div>
+      <span class="fc-label blue">FinOps & savings</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Analyze cloud spend, identify savings opportunities (20–40% typical).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes Cost Explorer data, identifies unused resources, suggests reserved instances, rightsizing opportunities, generated optimization code (terminate idle, schedule scaling).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review recommendations, test optimizations, measure savings.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Disaster recovery</div>
+      <span class="fc-label blue">RTO/RPO planning</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design and implement DR across regions with RTO/RPO targets.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates multi-region infrastructure, generates replication config, creates failover runbooks, calculates RTO/RPO, generates health check endpoints, suggests monitoring strategy.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Execute DR drills, measure actual RTO, verify data consistency.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–0.95 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Mobile developers (iOS/Android engineers)</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: API SDK generation</div>
+      <span class="fc-label blue">Swift/Kotlin codegen</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Backend changed API format. Generate updated Swift/Kotlin models.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads OpenAPI/Swagger spec, generates Codable models (Swift) or data classes (Kotlin), handles enum serialization, generates version compatibility, creates unit tests.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test JSON serialization, verify backward compatibility, integrate into app.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.10–0.25 | <strong>Time saved:</strong> 30–60 minutes</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: State management refactor</div>
+      <span class="fc-label blue">Redux → Zustand/MobX</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Migrate from Redux Toolkit to lighter state management.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads Redux store, actions, reducers, generates equivalent using Zustand/MobX, traces state mutations, preserves async logic, generates migration tests.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test state changes, verify async behavior, run on device.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.70 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Memory profiling</div>
+      <span class="fc-label blue">Leaks & optimization</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>App crashes on older devices. Find memory leaks.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads crash logs and code, identifies circular references, large allocations, retained listeners, suggests fixes (weak refs, cleanup, lazy loading), generates profiling instrumentation.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Profile with Xcode/Android Profiler, verify fixes, test on target devices.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Navigation architecture</div>
+      <span class="fc-label blue">Navigation graphs & flows</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate navigation architecture (React Navigation/Jetpack Compose).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates navigation graph, generates screen components, defines navigation actions, handles deep links, generates type-safe navigation helpers.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test navigation flows, verify deep link handling, test on device.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Platform-specific optimization</div>
+      <span class="fc-label blue">iOS/Android specifics</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Optimize for iOS (battery, background) and Android (permissions, lifecycle).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates platform-specific code (location updates, notification handling, permission requests), suggests OS-appropriate patterns, generates background task handling.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test on real devices, verify permissions, check battery impact.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Machine learning engineers and data scientists</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: ML pipeline orchestration</div>
+      <span class="fc-label blue">Airflow/Prefect + MLflow</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create end-to-end pipeline: load → preprocess → train → infer with monitoring.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates Airflow/Prefect pipeline, implements data validation (Great Expectations), adds MLflow versioning, creates inference wrapper, generates stage tests, adds alerting.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test each stage, monitor metrics, deploy to production.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–1.00 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Feature engineering</div>
+      <span class="fc-label blue">Feature discovery & importance</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Accuracy plateaued. Identify missing features, engineer new ones.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes features and raw data, suggests interactions/aggregations, generates feature code, calculates importance via SHAP, suggests domain-specific features.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test feature combinations, retrain, measure improvement.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Model evaluation framework</div>
+      <span class="fc-label blue">Baseline vs LSTM vs Transformer</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Compare 3 architectures with proper statistical tests.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates training scripts for each, creates evaluation metrics (accuracy, precision, F1, AUC), generates comparison plots, runs statistical significance tests, suggests hyperparameter ranges.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Run experiments, interpret results, select best model.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.75 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Hyperparameter optimization</div>
+      <span class="fc-label blue">Bayesian optimization</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Optimize hyperparameters for best validation accuracy.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates Optuna/Ray Tune search space, defines objective function, creates tuning script, generates result analysis (importance, correlations), suggests final hyperparameters.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Run search (can be slow), review top-5 params, retrain final model.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Model explainability</div>
+      <span class="fc-label blue">SHAP/LIME/attention</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Explain predictions for debugging and model trust.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates SHAP summary plots, creates LIME explanations for individual predictions, suggests attention visualization for NLP, generates decision rules (ANCHOR), documents insights.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review explanations, identify bias, document findings for stakeholders.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Documentation and technical writers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: API documentation</div>
+      <span class="fc-label blue">OpenAPI + Markdown</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Auto-generate API reference from code.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads controllers/handlers, extracts endpoints, generates OpenAPI spec, creates markdown docs with examples, generates request/response samples with curl commands.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review examples, check accuracy, publish to docs site.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Architecture decision records</div>
+      <span class="fc-label blue">ADR format</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Document architectural decision (Service A vs Service B).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads relevant code and config, generates ADR with context, decision, alternatives, consequences, accepted/rejected status.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review for accuracy, add team notes, archive in ADR repository.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.10–0.25 | <strong>Time saved:</strong> 30–60 minutes</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Onboarding guide</div>
+      <span class="fc-label blue">New contributor flow</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate step-by-step guide for new team members.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates setup instructions, creates architecture overview with ASCII diagrams, writes troubleshooting guide, suggests reading order, creates learning checklist.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Follow guide yourself, customize for your OS, test with new hire.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Runbook generation</div>
+      <span class="fc-label blue">Incident procedures</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create runbooks for common incidents (database failover, deployment rollback).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates step-by-step procedures with validation checks, shell commands, estimated time per step, escalation paths, success criteria.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Execute in staging, time each step, refine for clarity.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Troubleshooting guides</div>
+      <span class="fc-label blue">Common problems & solutions</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Create FAQ + troubleshooting guide from support tickets.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes common errors, generates FAQ with step-by-step fixes, creates decision tree for diagnosis, suggests preventive measures, links to relevant docs.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Review for accuracy, test solutions, publish to docs site.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Financial/fintech engineers and compliance officers</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: PCI-DSS audit</div>
+      <span class="fc-label red">Compliance scanning</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Audit payment code for PCI-DSS violations (credentials, encryption, access).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Scans for hardcoded credentials, unencrypted transmission, weak access controls, generates compliance mapping, suggests remediation with code examples, generates audit evidence.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Implement fixes, retest, document compliance.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.40–1.00 | <strong>Time saved:</strong> 3–5 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Reconciliation validation</div>
+      <span class="fc-label red">Accounting accuracy</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Verify reconciliation matches double-entry bookkeeping standards.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Reads reconciliation logic, validates against accounting rules, checks rounding, traces settlement flows, generates edge case tests (partial refunds, reversals, disputes).</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test edge cases, audit with accounting team, sign off.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Audit trail design</div>
+      <span class="fc-label red">Immutable logs</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate immutable audit trail for all financial transactions.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Designs append-only schema, generates versioning for data changes, creates auditor query interface, generates retention policies, implements tamper detection.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test immutability, verify auditor access, document retention rules.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Settlement workflow</div>
+      <span class="fc-label red">Multi-step settlement</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design robust settlement: authorization → clearing → settlement with rollback.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates state machine for settlement states, implements idempotent operations, generates rollback procedures, creates reconciliation checks, adds timeout handling.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test settlement flows, verify idempotency, audit with compliance team.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.30–0.75 | <strong>Time saved:</strong> 2–3 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Regulatory reporting</div>
+      <span class="fc-label red">Automated compliance</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate automated regulatory reports (daily settlement, monthly reconciliation).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates report generators for each requirement, implements data extraction from ledger, generates validation checks, creates audit trail for each report, schedules automated runs.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test report accuracy, verify completeness, submit to regulators.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.35–0.85 | <strong>Time saved:</strong> 2–4 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:36px;margin-bottom:16px;font-size:27px">Release engineers and build system owners</h3>
+
+<div class="framework-cards">
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 1: Semantic versioning</div>
+      <span class="fc-label blue">Auto-versioning</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Auto-bump version (major/minor/patch) based on commits.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes commit messages and diffs, applies semver rules, generates changelog from commits, tags release, creates build artifacts, generates release notes.</p>
+      </div>
+      <div>
+        <h4>You gate</h4>
+        <p>Review version bump, approve release, monitor deployment.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.10–0.25 | <strong>Time saved:</strong> 30–60 minutes</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 2: Multi-platform builds</div>
+      <span class="fc-label blue">Linux/macOS/Windows</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate unified build config for all platforms.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Generates Makefile/CMake/Gradle, identifies platform-specific deps, handles path differences, creates cross-platform test runners, generates CI matrix.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test builds on each platform, verify artifacts.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.20–0.50 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 3: Artifact management</div>
+      <span class="fc-label blue">Retention & cleanup</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Design artifact retention + cleanup policy, manage dependencies.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes dependency tree, identifies unused artifacts, generates retention policies (keep last N, delete pre-release), creates vulnerability scanning integration.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Implement policies, monitor repository size, audit dependencies.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 4: Build caching strategy</div>
+      <span class="fc-label blue">CI/CD optimization</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Optimize CI build time with smart caching.</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Analyzes dependencies, designs cache keys, generates cache warming strategies, measures cache hit rates, suggests cache invalidation triggers.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Measure build time improvement, monitor cache efficiency.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.15–0.40 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-card">
+    <div class="fc-head">
+      <div class="fc-title">Example 5: Binary distribution</div>
+      <span class="fc-label blue">Package & deploy</span>
+    </div>
+    <div class="fc-body">
+      <div>
+        <h4>Task</h4>
+        <p>Generate distribution channels (npm, PyPI, Homebrew, Docker, GitHub Releases).</p>
+      </div>
+      <div>
+        <h4>What Claude does</h4>
+        <p>Creates package.json/setup.py/Dockerfile, generates publish scripts, handles release signing, creates update checkers, generates installation docs.</p>
+      </div>
+      <div>
+        <h4>You validate</h4>
+        <p>Test installation on target platforms, verify authenticity checks.</p>
+      </div>
+      <div>
+        <h4>Time & cost</h4>
+        <p><strong>Cost:</strong> $0.25–0.60 | <strong>Time saved:</strong> 1–2 hours</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout gold-callout" style="margin-top:28px">
+  <strong>The common thread across roles:</strong> Claude Code excels at tasks that require reading and understanding large amounts of code, identifying patterns across files, and generating implementation details. Every role uses the same three capabilities differently: exploration (what does the code do?), planning (how should we change it?), and execution (make the change safely). The difference is domain-specific knowledge — DevOps knows infrastructure constraints, security teams know threat models, frontend knows accessibility standards, finance knows compliance requirements, ML engineers know model validation. Bring that knowledge. Claude brings code comprehension at scale.
+</div>
+
+<!-- ═══════════════ 10 REFERENCE ═══ -->
+<section class="section" id="reference">
+<div class="container">
+<div class="section-head" onclick="toggleSection(this)" tabindex="0">
+  <div class="section-no">10</div>
+  <div>
+    <div class="section-label">Reference</div>
+    <h2 class="section-title">Quick reference for daily use. The questions that come up in week one, answered directly.</h2>
+    <div class="section-status">Collapse ↑ / Expand ↓</div>
+  </div>
+  <button class="section-toggle" aria-label="toggle section">+</button>
+</div>
+
+<div class="table-wrap" style="margin-top:28px">
+  <table>
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Answer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>What models does Claude Code use?</strong></td>
+        <td>As of May 2026: Claude Haiku 4.5 for fast/cheap tasks, Claude Sonnet 4.6 as the default for most interactions, Claude Opus 4.7 for complex reasoning. The CLI selects models based on task complexity unless you override with <code>/model</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>How do I set conventions Claude always follows?</strong></td>
+        <td>Write a <code>CLAUDE.md</code> in your project root. Claude reads it at session start. Document code style, naming conventions, forbidden patterns, test requirements, and architectural decisions. This is the highest-leverage 30 minutes you can invest.</td>
+      </tr>
+      <tr>
+        <td><strong>Can Claude access the internet?</strong></td>
+        <td>Yes, via <code>WebFetch</code> (fetch a URL) and <code>WebSearch</code> (search the web). Both require approval unless pre-authorized. Use for fetching current documentation, checking API changes, or verifying library versions. Do not use to pull untrusted content directly into code.</td>
+      </tr>
+      <tr>
+        <td><strong>How do I control which tools Claude can use?</strong></td>
+        <td><code>.claude/settings.json</code> (project-level) and <code>~/.claude/settings.json</code> (user-level) define allowed and denied tools. You can create an allowlist for specific tools, require confirmation for others, and block specific commands entirely.</td>
+      </tr>
+      <tr>
+        <td><strong>What is a hook?</strong></td>
+        <td>A shell command that runs automatically on a Claude Code event: <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>. Hooks enforce standards deterministically — they run regardless of what Claude proposes. Use them for linting, audit logging, and team notifications.</td>
+      </tr>
+      <tr>
+        <td><strong>When should I use a subagent?</strong></td>
+        <td>When the task requires parallel independent research (security + performance + compliance review simultaneously), when results from multiple tools would overflow a single context window, or when you want to protect the main session from intermediate noise. Not for routine edits or single-thread tasks.</td>
+      </tr>
+      <tr>
+        <td><strong>How does prompt caching work?</strong></td>
+        <td>If the same large prompt prefix (system prompt + stable context) is used within a 5-minute TTL, subsequent calls cost ~10% of input tokens for the cached portion. Set up with the Anthropic SDK's <code>cache_control</code> parameter. Scheduled agents should always use this for repeated analyses.</td>
+      </tr>
+      <tr>
+        <td><strong>What should I never send to Claude Code?</strong></td>
+        <td>Production credentials, API keys, private keys, PII, unredacted customer data, or anything that would cause a compliance violation if it appeared in an Anthropic server log. Use environment variable injection, secrets management systems, and .gitignore. When in doubt, check with your security team before the session, not after.</td>
+      </tr>
+      <tr>
+        <td><strong>Claude proposed something I don't understand. What do I do?</strong></td>
+        <td">Ask it to explain before approving. <code>"Explain this change and why you chose this approach over alternatives."</code> If the explanation doesn't satisfy you, don't approve the change. You are responsible for what goes into the codebase, not Claude.</td>
+      </tr>
+      <tr>
+        <td><strong>Where do I report bugs or give feedback?</strong></td>
+        <td>GitHub: <code>github.com/anthropics/claude-code/issues</code>. For enterprise support, use your account manager or Anthropic's support portal.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+</section>
+
+</main>
+
+<section class="disclaimer">
+  <div class="disclaimer-inner">
+    <h3>Accuracy and scope</h3>
+    <p>This training material reflects Claude Code capabilities and pricing as of May 12, 2026. Token pricing, model availability, and feature set are subject to change — always verify current pricing at Anthropic's pricing page before making budget decisions. <strong>The Java walkthrough is a realistic composite scenario, not a documented case study.</strong> Actual performance improvements depend on your specific codebase, infrastructure, and workload profile. <strong>Security guidance reflects general best practice</strong> and should be reviewed against your organization's specific compliance requirements before applying in regulated environments. Claude Code's behavior, permissions model, and safety properties continue to evolve — consult Anthropic's official documentation for the authoritative current state.</p>
+  </div>
+</section>
+
+<section class="references" style="margin:48px 0;padding:32px 0;border-top:1px solid var(--line)">
+  <div class="container" style="max-width:820px;margin:0 auto;padding:0 32px">
+    <h3 style="margin-top:0;color:var(--blue);font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:24px">References</h3>
+    <ul style="list-style:none;padding:0;margin:0;display:grid;gap:14px">
+      <li><strong>Claude Code Documentation:</strong> <a href="https://claude.com/claude-code" target="_blank" style="color:var(--blue);text-decoration:none;border-bottom:1px solid currentColor">claude.com/claude-code</a></li>
+      <li><strong>Anthropic Pricing Documentation:</strong> <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" style="color:var(--blue);text-decoration:none;border-bottom:1px solid currentColor">platform.claude.com/docs/en/about-claude/pricing</a></li>
+      <li><strong>Claude API Official Docs:</strong> <a href="https://platform.claude.com/docs/en/about-claude/overview" target="_blank" style="color:var(--blue);text-decoration:none;border-bottom:1px solid currentColor">platform.claude.com/docs/en/about-claude</a></li>
+      <li><strong>Claude Code GitHub Issues:</strong> <a href="https://github.com/anthropics/claude-code/issues" target="_blank" style="color:var(--blue);text-decoration:none;border-bottom:1px solid currentColor">github.com/anthropics/claude-code/issues</a></li>
+      <li><strong>Security & Compliance:</strong> <a href="https://anthropic.com/security" target="_blank" style="color:var(--blue);text-decoration:none;border-bottom:1px solid currentColor">anthropic.com/security</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="footer">
+  Claude Code Engineer Training | May 2026 | 12 role-specific personas with 3+ examples each
+</footer>
+
+<script>
+function toggleSection(header) {
+  const section = header.closest('.section');
+  section.classList.toggle('collapsed');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const nav = document.querySelector('.topnav');
+  const links = nav.querySelectorAll('a');
+
+  window.addEventListener('scroll', function() {
+    let current = '';
+    document.querySelectorAll('section[id]').forEach(section => {
+      if (pageYOffset >= section.offsetTop - 200) {
+        current = section.getAttribute('id');
+      }
+    });
+    links.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href').slice(1) === current) {
+        link.classList.add('active');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
